@@ -1,0 +1,50 @@
+networks:
+    test-app-Network:
+      driver: bridge
+
+services:
+
+    nginx:
+        restart: always
+        container_name: nginx
+        build:
+            context: ./.docker/nginx
+            dockerfile: Dockerfile
+        ports:
+            - "8088:80"
+        volumes:
+            - "./.:/app/"
+        networks:
+            - test-app-Network
+
+
+
+    backand:
+        restart: always
+        container_name: php
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        env_file:
+            - ./.env
+        volumes:
+            - ". :/app"
+        networks:
+            - test-app-Network
+
+
+    postgres:
+        restart: always
+        build:
+            context: .docker/pgsql
+            dockerfile: Dockerfile
+        container_name: postgres
+        ports:
+            -   "5444:5432"
+        environment:
+            - POSTGRES_USER=valid
+            - POSTGRES_PASSWORD=secret
+        networks:
+            - test-app-Network
+        volumes:
+            -   "./.storageDB/postgres/data:/var/lib/postgresql/data"
